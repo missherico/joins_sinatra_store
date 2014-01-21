@@ -8,7 +8,7 @@ def dbname
 end
 
 def with_db
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   yield c
   c.close
 end
@@ -17,11 +17,43 @@ get '/' do
   erb :index
 end
 
+# The Categories machinery:
+
+get '/categories' do
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+
+  @categories = c.exec_params("SELECT * FROM categories")
+  erb :categories
+end
+
+get '/categories/new' do
+  erb :new_category
+end
+
+post '/categories' do
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+  c.exec_params("INSERT INTO categories (description) VALUES ($1)",
+                  [params["description"]])
+
+  new_category_id = c.exec_params("SELECT currval('categories_id_seq');").first["currval"]
+  c.close
+  redirect "/categories/#{new_category_id}"
+end
+
+get '/categories/:id' do
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+  @category = c.exec_params("SELECT * FROM categories WHERE categories.id = $1;", [params[:id]]).first
+  c.close
+  erb :category
+end
+
+
+
 # The Products machinery:
 
 # Get the index of products
 get '/products' do
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
 
   # Get all rows from the products table.
   @products = c.exec_params("SELECT * FROM products;")
@@ -36,7 +68,7 @@ end
 
 # POST to create a new product
 post '/products' do
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
 
   # Insert the new row into the products table.
   c.exec_params("INSERT INTO products (name, price, description) VALUES ($1,$2,$3)",
@@ -51,7 +83,7 @@ end
 
 # Update a product
 post '/products/:id' do
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
 
   # Update the product.
   c.exec_params("UPDATE products SET (name, price, description) = ($2, $3, $4) WHERE products.id = $1 ",
@@ -61,7 +93,7 @@ post '/products/:id' do
 end
 
 get '/products/:id/edit' do
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   @product = c.exec_params("SELECT * FROM products WHERE products.id = $1", [params["id"]]).first
   c.close
   erb :edit_product
@@ -69,7 +101,7 @@ end
 # DELETE to delete a product
 post '/products/:id/destroy' do
 
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   c.exec_params("DELETE FROM products WHERE products.id = $1", [params["id"]])
   c.close
   redirect '/products'
@@ -77,14 +109,17 @@ end
 
 # GET the show page for a particular product
 get '/products/:id' do
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   @product = c.exec_params("SELECT * FROM products WHERE products.id = $1;", [params[:id]]).first
   c.close
   erb :product
 end
 
+
+# PRODUCTS: CREATE, SEED, DELETE TABLE
+
 def create_products_table
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   c.exec %q{
   CREATE TABLE products (
     id SERIAL PRIMARY KEY,
@@ -97,7 +132,7 @@ def create_products_table
 end
 
 def drop_products_table
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   c.exec "DROP TABLE products;"
   c.close
 end
@@ -114,9 +149,52 @@ def seed_products_table
               ["Toaster", "20.00", "Toasts your enemies!"],
              ]
 
-  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   products.each do |p|
     c.exec_params("INSERT INTO products (name, price, description) VALUES ($1, $2, $3);", p)
   end
   c.close
 end
+
+
+# CATEGORIES: CREATE TABLE, SEED TABLE, DROP TABLE
+
+def create_categories_table
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+  c.exec %q{
+  CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    description varchar(255)
+  );
+  }
+  c.close
+end
+
+def drop_categories_table
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+  c.exec "DROP TABLE categories;"
+  c.close
+end
+
+def seed_categories_table
+  categories = [["Education"],
+              ["Appliances"],
+              ["Toys"],
+              ["Apparel"],
+              ["Tools"],
+              ["Hodge Podge"],
+              ["Moving Parts"],
+              ["Dangerous"],
+             ]
+
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+  categories.each do |cat|
+    c.exec_params("INSERT INTO categories (description) VALUES ($1);", cat)
+  end
+  c.close
+end
+
+
+
+
+
