@@ -1,4 +1,4 @@
-require 'pry'
+8require 'pry'
 require 'sinatra'
 require 'sinatra/reloader'
 require 'pg'
@@ -8,7 +8,7 @@ def dbname
 end
 
 def with_db
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
   yield c
   c.close
 end
@@ -21,7 +21,7 @@ end
 
 # Get the index of products
 get '/products' do
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
 
   # Get all rows from the products table.
   @products = c.exec_params("SELECT * FROM products;")
@@ -36,7 +36,7 @@ end
 
 # POST to create a new product
 post '/products' do
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
 
   # Insert the new row into the products table.
   c.exec_params("INSERT INTO products (name, price, description) VALUES ($1,$2,$3)",
@@ -51,7 +51,7 @@ end
 
 # Update a product
 post '/products/:id' do
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
 
   # Update the product.
   c.exec_params("UPDATE products SET (name, price, description) = ($2, $3, $4) WHERE products.id = $1 ",
@@ -61,7 +61,7 @@ post '/products/:id' do
 end
 
 get '/products/:id/edit' do
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
   @product = c.exec_params("SELECT * FROM products WHERE products.id = $1", [params["id"]]).first
   c.close
   erb :edit_product
@@ -69,7 +69,7 @@ end
 # DELETE to delete a product
 post '/products/:id/destroy' do
 
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
   c.exec_params("DELETE FROM products WHERE products.id = $1", [params["id"]])
   c.close
   redirect '/products'
@@ -77,14 +77,14 @@ end
 
 # GET the show page for a particular product
 get '/products/:id' do
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
   @product = c.exec_params("SELECT * FROM products WHERE products.id = $1;", [params[:id]]).first
   c.close
   erb :product
 end
 
 def create_products_table
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
   c.exec %q{
   CREATE TABLE products (
     id SERIAL PRIMARY KEY,
@@ -97,7 +97,7 @@ def create_products_table
 end
 
 def drop_products_table
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
   c.exec "DROP TABLE products;"
   c.close
 end
@@ -114,7 +114,7 @@ def seed_products_table
               ["Toaster", "20.00", "Toasts your enemies!"],
              ]
 
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => "sinatrastore")
   products.each do |p|
     c.exec_params("INSERT INTO products (name, price, description) VALUES ($1, $2, $3);", p)
   end
