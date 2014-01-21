@@ -42,7 +42,7 @@ get '/categories/:id' do
   c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   @category = c.exec_params("SELECT * FROM categories WHERE categories.id = $1;", [params[:id]]).first
   
-list_products = c.exec_params("
+  list_products = c.exec_params("
     SELECT p.name FROM categories AS c  
     INNER JOIN prodcat AS pc 
     ON pc.category_id = c.id
@@ -50,7 +50,7 @@ list_products = c.exec_params("
     ON pc.product_id = p.id
     WHERE c.id=$1;", [params[:id]] )
 
-@products_array = list_products.to_a
+  @products_array = list_products.to_a
 
   c.close
   erb :category
@@ -104,8 +104,31 @@ end
 get '/products/:id/edit' do
   c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   @product = c.exec_params("SELECT * FROM products WHERE products.id = $1", [params["id"]]).first
+  
+  list_categories = c.exec_params("
+    SELECT c.description FROM products as p 
+    INNER JOIN prodcat AS pc 
+    ON pc.product_id = p.id
+    INNER JOIN categories AS c 
+    ON pc.category_id = c.id
+    WHERE p.id=$1;", [params[:id]] )
+  
+  @categories_array = list_categories.to_a
+
+  all_categories = c.exec_params("
+    SELECT * FROM products as p 
+    INNER JOIN prodcat AS pc 
+    ON pc.product_id = p.id
+    INNER JOIN categories AS c 
+    ON pc.category_id = c.id
+    WHERE p.id=$1;", [params[:id]] )
+
+  @every_category = all_categories.to_a
+binding.pry
   c.close
   erb :edit_product
+
+
 end
 # DELETE to delete a product
 post '/products/:id/destroy' do

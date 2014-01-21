@@ -1,6 +1,9 @@
+<h2>OUR PRODUCTS</h2>
+
+<h4>Click a product to view details.</h4>
 <ul>
   <% @products.each do |product| %>
-    <li> <a href="products/<%=product["id"]%>"> View <%= product["name"]%></a></li>
+    <li> <a href="products/<%=product["id"]%>"><%= product["name"]%></a></li>
   <% end %>
 </ul>
 

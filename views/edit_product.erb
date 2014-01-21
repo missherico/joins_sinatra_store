@@ -1,21 +1,40 @@
 <form action="/products/<%=@product["id"]%>" method="post">
   <p>
-    <label>Name:</label>
+    <label>Product Name:</label>
+    <br />
     <input type="text" name="name" value="<%=@product["name"]%>">
   </p>
 
   <p>
     <label>Price:</label>
-    <input type="number" name="price" value="<%=@product["id"]%>">
+    <br />
+    <input type="currency" name="price" value="<%=@product["id"]%>">
   </p>
 
   <p>
     <label>Description:</label>
+    <br />
     <textarea name="description"><%= @product["description"]%></textarea>
   </p>
 
   <p>
-    <input type="submit" name="" value="Create the new product.">
+    <label>REMOVE <%=@product["name"]%> from a category:</label>
+    <br />
+    <% @categories_array.each do |category| %>
+    <button >Remove <%= category["description"] %></button>
+    <% end %>
+  </p>
+
+  <p>
+    <label>ADD <%=@product["name"]%> to a category:</label>
+
+    <% @every_category.each do |category| %>
+    <button>ADD <%= category["description"] %></button>
+    <% end %>
+  </p>
+
+
+    <input type="submit" name="" value="Update product info">
   </p>
 </form>
 

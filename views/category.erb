@@ -1,12 +1,14 @@
-<p><%= @category["description"] %></p>
+<h2>C A T E G O R Y:&nbsp;<%= @category["description"] %></h2>
 
 
 <h4> PRODUCTS </h4>
+
 <table>
 <% @products_array.each do |product| %>
 
 <tr>
 	<td><%= product["name"] %></td>
 </tr>
+
 </table>
 <% end %>
