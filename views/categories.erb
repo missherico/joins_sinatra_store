@@ -1,3 +1,9 @@
 
 <h3> CATEGORIES </h3>
-<p> Name: <%= @category["name"] %> </p>
+<ul>
+  <% @categories.each do |category| %>
+    <li> <a href="categories/<%=category["id"]%>"> <%= category["description"]%></a></li>
+  <% end %>
+</ul>
+
+<a href="categories/new"> Create a new category.</a>

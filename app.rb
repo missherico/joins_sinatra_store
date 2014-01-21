@@ -3,9 +3,7 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'pg'
 
-def dbname
-  "storeadminsite"
-end
+
 
 def with_db
   c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
@@ -43,6 +41,16 @@ end
 get '/categories/:id' do
   c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   @category = c.exec_params("SELECT * FROM categories WHERE categories.id = $1;", [params[:id]]).first
+  
+@list_products = c.exec_params("
+    SELECT p.name FROM categories AS c  
+    INNER JOIN prodcat AS pc 
+    ON pc.category_id = c.id
+    INNER JOIN products AS p 
+    ON pc.product_id = p.id
+    WHERE c.id=$1;", [params[:id]] )
+ binding.pry
+
   c.close
   erb :category
 end
@@ -111,6 +119,15 @@ end
 get '/products/:id' do
   c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
   @product = c.exec_params("SELECT * FROM products WHERE products.id = $1;", [params[:id]]).first
+
+  @list_categories = c.exec_params("
+    SELECT c.description FROM products as p 
+    INNER JOIN prodcat AS pc 
+    ON pc.product_id = p.id
+    INNER JOIN categories AS c 
+    ON pc.category_id = c.id
+    WHERE p.id=$1;", [params[:id]] )
+
   c.close
   erb :product
 end
@@ -193,6 +210,49 @@ def seed_categories_table
   end
   c.close
 end
+
+# CREATE JOIN TABLE: PROD-CATEG
+def create_productcategory_table
+  c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+  c.exec %q{
+  CREATE TABLE prodcat (
+    id SERIAL PRIMARY KEY,
+    category_id INTEGER,
+    product_id INTEGER
+  );
+  }
+  c.close
+end
+
+
+def seed_prodcat_table
+
+prodcat = [[8,1],
+          [1,1]
+
+             ]
+
+c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+  prodcat.each do |pc|
+    c.exec_params("INSERT INTO prodcat (category_id, product_id) VALUES ($1, $2);", pc)
+  end
+  c.close
+
+end
+
+# def join_categoryid_to_prodcat
+#   c = PGconn.new(:host => "localhost", :dbname => 'sinatrastore')
+#   c.exec ("
+#     SELECT * FROM categories as cat
+#     INNER JOIN prodcat AS pc 
+#       ON pc.category_id=cat.id
+#   ");
+# end
+
+
+
+
+
 
 
 
