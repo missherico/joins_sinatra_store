@@ -1,12 +1,22 @@
-<p> Name: <%= @product["name"] %> </p>
-<p> Price: <%= @product["price"] %></p>
-<p> <%= @product["description"] %></p>
+
+<h3> Name: <%= @product["name"] %> </h3>
+<h4> Price: <%= @product["price"] %></h4>
+<h4> <%= @product["description"] %></h4>
 
 <a href="<%=@product["id"]%>/edit"> Edit this product.</a>
 <form action="/products/<%= @product["id"] %>/destroy" method="post">
     <input type="submit" name="" value="Delete this product.">
 </form>
 
-<p><%= @list_categories %>  </p>
 
+
+<h4> CATEGORIES </h4>
+<table>
+<% @categories_array.each do |category| %>
+
+<tr>
+	<td><%= category["description"] %></td>
+</tr>
+</table>
+<% end %>
 <!-- iterate through list. -->

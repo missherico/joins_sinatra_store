@@ -1,4 +1,12 @@
 <p><%= @category["description"] %></p>
 
 
-<p><%= @list_prod %></p>
+<h4> PRODUCTS </h4>
+<table>
+<% @products_array.each do |product| %>
+
+<tr>
+	<td><%= product["name"] %></td>
+</tr>
+</table>
+<% end %>
